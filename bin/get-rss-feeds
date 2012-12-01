@@ -64,6 +64,10 @@ get-feeds-wwwmofagovtw = ->
   $, take <- grok \http://www.mofa.gov.tw/RSS/Index/?opno=a280c610-3f75-471f-a3c1-e0883e7122f7 \www-mofa-gov-tw-list
   $ ".degree a" .each -> take @attr \href
 
+get-feeds-wwweygovtw = ->
+  $, take <- grok \http://www.ey.gov.tw/cp.aspx?n=4E183D9D41028977 \www-ey-gov-tw-list
+  $ "\#ContentPlaceHolder1_dlindex a" .each -> take that.0 if @attr \href .match /^.*Rss_News\.aspx.+$/
+
 all-feeds =
   * get-feeds-govtw
   * get-feeds-npllygovtw
@@ -71,5 +75,6 @@ all-feeds =
   * get-feeds-wwwstatgovtw
   * get-feeds-wwwcwbgovtw
   * get-feeds-wwwmofagovtw
+  * get-feeds-wwweygovtw
 
 async.parallel all-feeds, -> process.stdout.write \done
