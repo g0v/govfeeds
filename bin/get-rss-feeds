@@ -36,20 +36,22 @@ grok = (url, cb) ->
   cb $, take
   get-titles links, (links2) -> save-as "data/#file.json", links2
 
-get-feeds-govtw = ->
+get-feeds = []
+
+get-feeds.push ->
   $, take <- grok \http://rss.www.gov.tw
   $ ".list_item a:first-child" .each -> take @attr \href
 
-get-feeds-npllygovtw = ->
+get-feeds.push ->
   $, take <- grok \http://npl.ly.gov.tw/do/forward?dest=www.rss
-  $ "a[href*=Rss]" .each -> take @attr \href
+  $ "a[href*=Rss]" .each -> take @attr(\href).replace /;jsessionid=.+$/, ""
 
-get-feeds-wwwlygovtw = ->
+get-feeds.push ->
   $, take <- grok \http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.jsp
   $ ".rss_bg a" .each -> take @attr \href
 
-## bug5 page. Nothing works. Manually get rss links.
-get-feeds-wwwstatgovtw = ->
+get-feeds.push ->
+  ## bug5 page. Nothing works. Manually get rss links.
   # $, take <- grok { url: "http://www.stat.gov.tw/ct.asp?xItem=24186&ctNode=5083&mp=4", encoding:\ascii } \www-stat-gov-tw
   # $("\#ContentField a").each -> take @attr \href
   links =
@@ -57,36 +59,25 @@ get-feeds-wwwstatgovtw = ->
     * "http://www.stat.gov.tw/rss/StateStat.xml"
   get-titles links, (links2) -> save-as "data/www-stat-gov-tw.json", links2
 
-get-feeds-wwwcwbgovtw = ->
+get-feeds.push ->
   $, take <- grok \http://www.cwb.gov.tw/V7/service/eservice/rss.htm
   $ ".BoxTableee a" .each -> take that.0 if @attr \href .match /^\/rss\/(forecast|Data)\/.+$/
 
-get-feeds-wwwmofagovtw = ->
+get-feeds.push ->
   $, take <- grok \http://www.mofa.gov.tw/RSS/Index/?opno=a280c610-3f75-471f-a3c1-e0883e7122f7
   $ ".degree a" .each -> take @attr \href
 
-get-feeds-wwweygovtw = ->
+get-feeds.push ->
   $, take <- grok \http://www.ey.gov.tw/cp.aspx?n=4E183D9D41028977
   $ "\#ContentPlaceHolder1_dlindex a" .each -> take that.0 if @attr \href .match /^.*Rss_News\.aspx.+$/
 
-get-feeds-wwwmocgovtw = ->
+get-feeds.push ->
   $, take <- grok \http://www.moc.gov.tw/rss.do
   $ ".t13bk a" .each (i) -> take @attr \href if i > 1
 
-get-feeds-nmhgovtw = ->
+get-feeds.push ->
   $, take <- grok \http://www.nmh.gov.tw/zh-tw/Index/RSS.aspx?unkey=RSS
   $ '#oDV_Friendly_Content a[href]' .each -> take @attr \href
-
-get-feeds =
-  * get-feeds-govtw
-  * get-feeds-npllygovtw
-  * get-feeds-wwwlygovtw
-  * get-feeds-wwwstatgovtw
-  * get-feeds-wwwcwbgovtw
-  * get-feeds-wwwmofagovtw
-  * get-feeds-wwweygovtw
-  * get-feeds-wwwmocgovtw
-  * get-feeds-nmhgovtw
 
 # get-feeds = [ get-feeds[ * - 1 ] ]
 
