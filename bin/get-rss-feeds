@@ -8,9 +8,12 @@ save-as = (file, feeds) ->
   process.stdout.write "#file produced.\n"
 
 grok = (url, file, cb) ->
-  _err, _res, page <- request "http://rss.www.gov.tw"
+  _err, _res, page <- request url
+  base = (url / '/')[0 2] * '//'
   links = []
-  take = -> links.push it
+  take = ->
+    it = "#base#it" if it is /^\//;
+    links.push it
   $ = cheerio.load page
   cb $, take
   save-as "data/#file.json", links
@@ -21,7 +24,7 @@ get-feeds-govtw = ->
 
 get-feeds-npllygovtw = ->
   $, take <- grok \http://npl.ly.gov.tw/do/forward?dest=www.rss \np-ly-gov-tw-list
-  $ "a" .each -> that is /\/rssfeed/ and take that if @attr(\href)
+  $ "a[href*=Rss]" .each -> take @attr \href
 
 get-feeds-wwwlygovtw = ->
   $, take <- grok \http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.js \www-ly-gov-tw-list
