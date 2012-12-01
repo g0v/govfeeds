@@ -4,7 +4,7 @@
 require! <[ cheerio fs request async ]>
 
 save-as = (file, feeds) ->
-  fs.write-file file, JSON.stringify feeds, \utf8
+  fs.write-file file, JSON.stringify feeds, \utf8, 4
   process.stdout.write "#file produced.\n"
 
 rss-channel-title = (url, cb) ->
