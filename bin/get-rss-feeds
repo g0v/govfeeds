@@ -36,36 +36,36 @@ grok = (url, file, cb) ->
   get-titles links, (links2) -> save-as "data/#file.json", links2
 
 get-feeds-govtw = ->
-  $, take <- grok \http://rss.www.gov.tw \gov-tw-list
+  $, take <- grok \http://rss.www.gov.tw \gov-tw
   $ ".list_item a:first-child" .each -> take @attr \href
 
 get-feeds-npllygovtw = ->
-  $, take <- grok \http://npl.ly.gov.tw/do/forward?dest=www.rss \np-ly-gov-tw-list
+  $, take <- grok \http://npl.ly.gov.tw/do/forward?dest=www.rss \np-ly-gov-tw
   $ "a[href*=Rss]" .each -> take @attr \href
 
 get-feeds-wwwlygovtw = ->
-  $, take <- grok \http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.jsp \www-ly-gov-tw-list
+  $, take <- grok \http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.jsp \www-ly-gov-tw
   $ ".rss_bg a" .each -> take @attr \href
 
 ## bug5 page. Nothing works. Manually get rss links.
 get-feeds-wwwstatgovtw = ->
-  # $, take <- grok { url: "http://www.stat.gov.tw/ct.asp?xItem=24186&ctNode=5083&mp=4", encoding:\ascii } \www-stat-gov-tw-list
+  # $, take <- grok { url: "http://www.stat.gov.tw/ct.asp?xItem=24186&ctNode=5083&mp=4", encoding:\ascii } \www-stat-gov-tw
   # $("\#ContentField a").each -> take @attr \href
   links =
     * "http://www.stat.gov.tw/rss/StateNews.xml"
     * "http://www.stat.gov.tw/rss/StateStat.xml"
-  get-titles links, (links2) -> save-as "data/www-stat-gov-tw-list.json", links2
+  get-titles links, (links2) -> save-as "data/www-stat-gov-tw.json", links2
 
 get-feeds-wwwcwbgovtw = ->
-  $, take <- grok \http://www.cwb.gov.tw/V7/service/eservice/rss.htm \www-cwb-gov-tw-list
+  $, take <- grok \http://www.cwb.gov.tw/V7/service/eservice/rss.htm \www-cwb-gov-tw
   $ ".BoxTableee a" .each -> take that.0 if @attr \href .match /^\/rss\/(forecast|Data)\/.+$/
 
 get-feeds-wwwmofagovtw = ->
-  $, take <- grok \http://www.mofa.gov.tw/RSS/Index/?opno=a280c610-3f75-471f-a3c1-e0883e7122f7 \www-mofa-gov-tw-list
+  $, take <- grok \http://www.mofa.gov.tw/RSS/Index/?opno=a280c610-3f75-471f-a3c1-e0883e7122f7 \www-mofa-gov-tw
   $ ".degree a" .each -> take @attr \href
 
 get-feeds-wwweygovtw = ->
-  $, take <- grok \http://www.ey.gov.tw/cp.aspx?n=4E183D9D41028977 \www-ey-gov-tw-list
+  $, take <- grok \http://www.ey.gov.tw/cp.aspx?n=4E183D9D41028977 \www-ey-gov-tw
   $ "\#ContentPlaceHolder1_dlindex a" .each -> take that.0 if @attr \href .match /^.*Rss_News\.aspx.+$/
 
 all-feeds =
