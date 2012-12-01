@@ -22,22 +22,21 @@ get-titles = (links, cb) ->
       cb2!
 
   async.for-each links, add-title, (err, results) ->
-    console.log(err) if err
-    cb(links2)
+    if err                 
+       process.stderr.write(err + "\n")
+    else
+       cb(links2)
 
 grok = (url, file, cb) ->
   _err, _res, page <- request url
-  console.log(page)
   links = []
   take = -> links.push Url.resolve(url, it)
   $ = cheerio.load page
   cb $, take
-  console.log(links)
-  process.exit!
   get-titles links, (links2) -> save-as "data/#file.json", links2
 
 get-feeds-govtw = ->
-  $, take <- grok \http:/       /rss.www.gov.tw \gov-tw-list
+  $, take <- grok \http://rss.www.gov.tw \gov-tw-list
   $ ".list_item a:first-child" .each -> take @attr \href
 
 get-feeds-npllygovtw = ->
@@ -57,9 +56,14 @@ get-feeds-wwwstatgovtw = ->
     * "http://www.stat.gov.tw/rss/StateStat.xml"
   get-titles links, (links2) -> save-as "data/www-stat-gov-tw-list.json", links2
 
+get-feeds-wwwcwbgovtw = ->
+  $, take <- grok \http://www.cwb.gov.tw/V7/service/eservice/rss.htm \www-cwb-gov-tw-list
+  $ ".BoxTableee a" .each -> take that.0 if @attr \href .match /^\/rss\/(forecast|Data)\/.+$/
+
 async.parallel [
   * get-feeds-govtw
   * get-feeds-npllygovtw
   * get-feeds-wwwlygovtw
   * get-feeds-wwwstatgovtw
+  * get-feeds-wwwcwbgovtw
 ], -> process.stdout.write \done
