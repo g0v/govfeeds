@@ -1,10 +1,10 @@
 [
     {
-        "url": "http://www.stat.gov.tw/rss/StateNews.xml",
-        "title": "中華民國統計資訊網(專業人士) - 最新訊息"
-    },
-    {
         "url": "http://www.stat.gov.tw/rss/StateStat.xml",
         "title": "中華民國統計資訊網(專業人士) - 國情統計通報"
+    },
+    {
+        "url": "http://www.stat.gov.tw/rss/StateNews.xml",
+        "title": "中華民國統計資訊網(專業人士) - 最新訊息"
     }
 ]
