@@ -8,7 +8,8 @@
   "homepage": "https://github.com/g0v/govfeeds",
   "dependencies": {
     "cheerio": "*",
-    "request": "*"
+    "request": "*",
+    "async": "*"
   },
   "devDependencies": {
     "LiveScript": "1.1.x"

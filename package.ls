@@ -7,5 +7,6 @@ homepage: 'https://github.com/g0v/govfeeds'
 dependencies:
   cheerio: \*
   request: \*
+  async: \*
 dev-dependencies:
   LiveScript: \1.1.x

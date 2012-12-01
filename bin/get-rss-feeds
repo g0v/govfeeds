@@ -1,11 +1,28 @@
 #!/usr/bin/env lsc
 # -*- livescript -*-
 
-require! <[ cheerio fs request ]>
+require! <[ cheerio fs request async ]>
 
 save-as = (file, feeds) ->
   fs.write-file file, JSON.stringify feeds, \utf8
   process.stdout.write "#file produced.\n"
+
+rss-channel-title = (url, cb) ->
+  _err, _res, page <- request url
+  $ = cheerio.load page
+  cb $("channel > title").text!
+
+get-titles = (links, cb) ->
+  links2 = []
+  take2 = -> links2.push it
+  add-title = (feed-url, cb2) ->
+    rss-channel-title feed-url, ->
+      take2 { url: feed-url, title: it }
+      cb2!
+
+  async.for-each links, add-title, (err, results) ->
+    console.log(err) if err
+    cb(links2)
 
 grok = (url, file, cb) ->
   _err, _res, page <- request url
@@ -16,7 +33,7 @@ grok = (url, file, cb) ->
     links.push it
   $ = cheerio.load page
   cb $, take
-  save-as "data/#file.json", links
+  get-titles links, (links2) -> save-as "data/#file.json", links2
 
 get-feeds-govtw = ->
   $, take <- grok \http://rss.www.gov.tw \gov-tw-list
@@ -27,9 +44,8 @@ get-feeds-npllygovtw = ->
   $ "a[href*=Rss]" .each -> take @attr \href
 
 get-feeds-wwwlygovtw = ->
-  $, take <- grok \http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.js \www-ly-gov-tw-list
+  $, take <- grok \http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.jsp \www-ly-gov-tw-list
   $ ".rss_bg a" .each -> take @attr \href
 
-get-feeds-govtw!
-get-feeds-npllygovtw!
-get-feeds-wwwlygovtw!
+async.parallel [get-feeds-govtw, get-feeds-npllygovtw, get-feeds-wwwlygovtw], -> process.stdout.write \done
+
