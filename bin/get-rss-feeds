@@ -2,6 +2,7 @@
 # -*- livescript -*-
 
 require! <[ cheerio fs request async ]>
+Url = require \url
 
 save-as = (file, feeds) ->
   fs.write-file file, JSON.stringify feeds, \utf8, 4
@@ -26,17 +27,17 @@ get-titles = (links, cb) ->
 
 grok = (url, file, cb) ->
   _err, _res, page <- request url
-  base = (url / '/')[0 2] * '//'
+  console.log(page)
   links = []
-  take = ->
-    it = "#base#it" if it is /^\//;
-    links.push it
+  take = -> links.push Url.resolve(url, it)
   $ = cheerio.load page
   cb $, take
+  console.log(links)
+  process.exit!
   get-titles links, (links2) -> save-as "data/#file.json", links2
 
 get-feeds-govtw = ->
-  $, take <- grok \http://rss.www.gov.tw \gov-tw-list
+  $, take <- grok \http:/       /rss.www.gov.tw \gov-tw-list
   $ ".list_item a:first-child" .each -> take @attr \href
 
 get-feeds-npllygovtw = ->
@@ -47,8 +48,18 @@ get-feeds-wwwlygovtw = ->
   $, take <- grok \http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.jsp \www-ly-gov-tw-list
   $ ".rss_bg a" .each -> take @attr \href
 
+## bug5 page. Nothing works. Manually get rss links.
+get-feeds-wwwstatgovtw = ->
+  # $, take <- grok { url: "http://www.stat.gov.tw/ct.asp?xItem=24186&ctNode=5083&mp=4", encoding:\ascii } \www-stat-gov-tw-list
+  # $("\#ContentField a").each -> take @attr \href
+  links =
+    * "http://www.stat.gov.tw/rss/StateNews.xml"
+    * "http://www.stat.gov.tw/rss/StateStat.xml"
+  get-titles links, (links2) -> save-as "data/www-stat-gov-tw-list.json", links2
+
 async.parallel [
   * get-feeds-govtw
   * get-feeds-npllygovtw
   * get-feeds-wwwlygovtw
+  * get-feeds-wwwstatgovtw
 ], -> process.stdout.write \done
