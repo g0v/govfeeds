@@ -21,12 +21,20 @@ get-feeds-govtw = ->
     $ ".list_item a:first-child" .each -> feed_links.push $(this).attr \href
     save-as "data/gov-tw-list.json", feed_links
 
-get-feeds-nplygovtw = ->
+get-feeds-npllygovtw = ->
   jsdom-env-with-jquery "http://npl.ly.gov.tw/do/forward?dest=www.rss", (errors, window) ->
     feed_links = []
     $ = window.$
     $ "a[href*=Rss]" .each -> feed_links.push $(this).attr \href
     save-as "data/np-ly-gov-tw-list.json", feed_links
 
+get-feeds-wwwlygovtw = ->
+  jsdom-env-with-jquery "http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.js", (errors, window) ->
+    feed_links = []
+    $ = window.$
+    $(".rss_bg a").each -> feed_links.push $(this).attr \href
+    save-as "data/www-ly-gov-tw-list.json", feed_links
+
 get-feeds-govtw!
-get-feeds-nplygovtw!
+get-feeds-npllygovtw!
+get-feeds-wwwlygovtw!
