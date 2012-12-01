@@ -1,0 +1,32 @@
+#!/usr/bin/env lsc
+# -*- livescript -*-
+
+require! [\jsdom, \fs]
+
+save-as = (file, feeds) ->
+  fs.write-file file, JSON.stringify(feeds, "utf8")
+  process.stdout.write file + " produced.\n"
+
+jsdom-env-with-jquery = (url, cb) ->
+  jsdom.env {
+    html: url
+    scripts: ["http://code.jquery.com/jquery.min.js"]
+    done: cb
+  }
+
+get-feeds-govtw = ->
+  jsdom-env-with-jquery "http://rss.www.gov.tw", (errors, window) ->
+    feed_links = []
+    $ = window.$
+    $ ".list_item a:first-child" .each -> feed_links.push $(this).attr \href
+    save-as "data/gov-tw-list.json", feed_links
+
+get-feeds-nplygovtw = ->
+  jsdom-env-with-jquery "http://npl.ly.gov.tw/do/forward?dest=www.rss", (errors, window) ->
+    feed_links = []
+    $ = window.$
+    $ "a[href*=Rss]" .each -> feed_links.push $(this).attr \href
+    save-as "data/np-ly-gov-tw-list.json", feed_links
+
+get-feeds-govtw!
+get-feeds-nplygovtw!
