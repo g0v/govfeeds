@@ -60,10 +60,16 @@ get-feeds-wwwcwbgovtw = ->
   $, take <- grok \http://www.cwb.gov.tw/V7/service/eservice/rss.htm \www-cwb-gov-tw-list
   $ ".BoxTableee a" .each -> take that.0 if @attr \href .match /^\/rss\/(forecast|Data)\/.+$/
 
-async.parallel [
+get-feeds-wwwmofagovtw = ->
+  $, take <- grok \http://www.mofa.gov.tw/RSS/Index/?opno=a280c610-3f75-471f-a3c1-e0883e7122f7 \www-mofa-gov-tw-list
+  $ ".degree a" .each -> take @attr \href
+
+all-feeds =
   * get-feeds-govtw
   * get-feeds-npllygovtw
   * get-feeds-wwwlygovtw
   * get-feeds-wwwstatgovtw
   * get-feeds-wwwcwbgovtw
-], -> process.stdout.write \done
+  * get-feeds-wwwmofagovtw
+
+async.parallel all-feeds, -> process.stdout.write \done
