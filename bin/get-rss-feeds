@@ -73,7 +73,11 @@ get-feeds-wwwmocgovtw = ->
   $, take <- grok \http://www.moc.gov.tw/rss.do
   $ ".t13bk a" .each (i) -> take @attr \href if i > 1
 
-all-feeds =
+get-feeds-nmhgovtw = ->
+  $, take <- grok \http://www.nmh.gov.tw/zh-tw/Index/RSS.aspx?unkey=RSS
+  $ '#oDV_Friendly_Content a[href]' .each -> take @attr \href
+
+get-feeds =
   * get-feeds-govtw
   * get-feeds-npllygovtw
   * get-feeds-wwwlygovtw
@@ -82,5 +86,8 @@ all-feeds =
   * get-feeds-wwwmofagovtw
   * get-feeds-wwweygovtw
   * get-feeds-wwwmocgovtw
+  * get-feeds-nmhgovtw
 
-async.parallel all-feeds, -> process.stdout.write \done
+# get-feeds = [ get-feeds[ * - 1 ] ]
+
+async.parallel get-feeds, -> process.stdout.write \done
