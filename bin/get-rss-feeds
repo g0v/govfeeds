@@ -47,5 +47,8 @@ get-feeds-wwwlygovtw = ->
   $, take <- grok \http://www.ly.gov.tw/01_lyinfo/0111_rss/rss01.jsp \www-ly-gov-tw-list
   $ ".rss_bg a" .each -> take @attr \href
 
-async.parallel [get-feeds-govtw, get-feeds-npllygovtw, get-feeds-wwwlygovtw], -> process.stdout.write \done
-
+async.parallel [
+  * get-feeds-govtw
+  * get-feeds-npllygovtw
+  * get-feeds-wwwlygovtw
+], -> process.stdout.write \done
