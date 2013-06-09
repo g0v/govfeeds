@@ -1,40 +1,50 @@
 #!/usr/bin/env perl
 use v5.14;
 use strict;
+use warnings;
+
 use URI;
-use URI::Escape;
-use JSON;
-use HTTP::Tiny;
-use List::MoreUtils qw(uniq);
+use LWP::UserAgent::Cached;
+use Web::Query;
+use XML::FeedPP;
 
 my $url = $ARGV[0] or die;
-my $ua = HTTP::Tiny->new;
 
-my $response = $ua->get("http://g0vre.herokuapp.com/read?full=1&url=" . uri_escape( $url ) );
+my $ua = $Web::Query::UserAgent = LWP::UserAgent::Cached->new(cache_dir => "/tmp/lwp-cache");
 
-die "Failed to fetch links via g0vre" unless $response->{success};
+my $base_url = URI->new($url);
 
-my $extracted_response = JSON::from_json( $response->{content} );
+my %seen= ();
+my $page = wq($url);
+my $links = $page->find("a")->filter(
+    sub {
+        return 0 unless $_->attr("href") && $_->attr("href") =~ m{\A(http:// | /)}x;
+        my $u = URI->new_abs( $_->attr("href"), $base_url );
+        return 0 if $u->host =~ /(facebook|plurk|twitter)\.com\z/;
+        return 0 if $u->path eq "/" || $u->path eq "";
 
-my @candidate_urls;
-for(@{$extracted_response->{full_links}}) {
-    if (
-        ($_->{text} =~ /rss/i || $_->{url} =~ /rss/i) &&
-        !($_->{url} =~ m{\A https?://(www\.)?(facebook|twitter|plurk)\.com/ }x) &&
-        !($_->{url} =~ m{\A https?://[^\?\s]+/ \z}x)
-    ) {
-        push @candidate_urls, $_->{url};
+        $_->attr("href", "$u");
+        return $seen{$u} ? 0 : ($seen{$u} = 1);
     }
-}
+)->filter(
+    sub {
+        my $response = $ua->get($_->attr("href"));
+        return 0 unless $response->is_success;
 
-@candidate_urls = uniq @candidate_urls;
-@candidate_urls = grep {
-    $response = $ua->get($_);
+        my $ct = $response->header("Content-Type");
+        return 0 unless $ct && $ct =~ m{(text|atom|rss|xml)}x;
 
-    my $ct = $response->{headers}{'content-type'};
-    # say "$ct\t$_";
+        my $feed;
 
-    $ct && $ct =~ m{\A (text|application)/xml \s* (;|\z)}x;
-} @candidate_urls;
+        eval {
+            $feed = XML::FeedPP->new(
+                $response->content,
+                ignore_error => 1,
+                -type => "string"
+            );
+            1;
+        };
 
-say for @candidate_urls;
+        return ($feed && $feed->isa("XML::FeedPP"));
+    }
+)->each(sub{ say $_->attr("href");  });
