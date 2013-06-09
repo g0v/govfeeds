@@ -1,0 +1,40 @@
+#!/usr/bin/env perl
+use v5.14;
+use strict;
+use URI;
+use URI::Escape;
+use JSON;
+use HTTP::Tiny;
+use List::MoreUtils qw(uniq);
+
+my $url = $ARGV[0] or die;
+my $ua = HTTP::Tiny->new;
+
+my $response = $ua->get("http://g0vre.herokuapp.com/read?full=1&url=" . uri_escape( $url ) );
+
+die "Failed to fetch links via g0vre" unless $response->{success};
+
+my $extracted_response = JSON::from_json( $response->{content} );
+
+my @candidate_urls;
+for(@{$extracted_response->{full_links}}) {
+    if (
+        ($_->{text} =~ /rss/i || $_->{url} =~ /rss/i) &&
+        !($_->{url} =~ m{\A https?://(www\.)?(facebook|twitter|plurk)\.com/ }x) &&
+        !($_->{url} =~ m{\A https?://[^\?\s]+/ \z}x)
+    ) {
+        push @candidate_urls, $_->{url};
+    }
+}
+
+@candidate_urls = uniq @candidate_urls;
+@candidate_urls = grep {
+    $response = $ua->get($_);
+
+    my $ct = $response->{headers}{'content-type'};
+    # say "$ct\t$_";
+
+    $ct && $ct =~ m{\A (text|application)/xml \s* (;|\z)}x;
+} @candidate_urls;
+
+say for @candidate_urls;
